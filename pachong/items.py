@@ -8,11 +8,12 @@ from datetime import datetime
 
 import scrapy
 from scrapy.loader import ItemLoader
-from scrapy.loader.processors import TakeFirst
+from scrapy.loader.processors import TakeFirst, MapCompose
 
 from pachong.settings import SQL_DATE_FORMAT,SQL_DATETIME_FORMAT
 from pachong.utils.common import extract_num
 
+from w3lib.html import remove_tags
 
 class PachongItem(scrapy.Item):
     # define the fields for your item here like:
@@ -20,8 +21,17 @@ class PachongItem(scrapy.Item):
     pass
 
 
+def remove_splash(value):
+    #去掉工作城市的斜线
+    return value.replace("/","")
 
-
+# def remove_html_tags(value):
+#     #去掉html的tag
+#     return
+def handle_jobaddr(value):
+    addr_list=value.split("\n")
+    addr_list=[item.strip() for item in addr_list if item.strip() !="查看地图"]
+    return "".join(addr_list)
 
 class ZhihuQuestionItem(scrapy.Item):
     #知乎的问题Item
@@ -134,17 +144,39 @@ class LagouJobItem(scrapy.Item):
     url_object_id= scrapy.Field()
     title= scrapy.Field()
     salary = scrapy.Field()
-    job_city = scrapy.Field()
-    work_years = scrapy.Field()
-    degree_needed  = scrapy.Field()
+    job_city = scrapy.Field(
+        input_processor=MapCompose(remove_splash)
+    )
+    work_years = scrapy.Field(
+       input_processor= MapCompose(remove_splash)
+    )
+    degree_needed  = scrapy.Field(
+        input_processor=MapCompose(remove_splash)
+    )
     job_type = scrapy.Field()
     publish_time = scrapy.Field()
     job_advantage = scrapy.Field()
-    job_desc = scrapy.Field()
-    job_addr = scrapy.Field()
+    job_desc = scrapy.Field(
+        input_processor=MapCompose(remove_tags)#移除html的tags
+    )
+    job_addr = scrapy.Field(
+        input_processor=MapCompose(remove_tags,handle_jobaddr)  # 移除html的tags
+    )
     company_name = scrapy.Field()
     company_url = scrapy.Field()
-    tags = scrapy.Field()
+    tags = scrapy.Field(
+        input_processor= Join(",")
+    )
     crawl_time = scrapy.Field()
-
-    pass
+    def get_insert_sql(self):
+        # 插入LAGOUJOB表的sql语句
+        insert_sql = """
+            insert into lagou_job(url,url_object_id, title,salary,job_city,work_years,degree_needed,
+              job_type, publish_time,job_advantage,job_desc,job_addr,company_name,company_url,tags,crawl_time
+              )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s, %s)
+            ON DUPLICATE KEY UPDATE salary=VALUES(salary),job_advantage=VALUES(job_advantage)
+        """
+        params = (self["url"],self["url_object_id"], self["title"],self["salary"],self["job_city"],self["work_years"],self["degree_needed"],
+                  self["job_type"], self["publish_time"],self["job_advantage"],self["job_desc"],self["job_addr"],self["company_name"],self["company_url"],self["tags"],self["crawl_time"].strftime(SQL_DATETIME_FORMAT))
+        return insert_sql,params
