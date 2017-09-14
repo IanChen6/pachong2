@@ -7,6 +7,8 @@
 from datetime import datetime
 
 import scrapy
+from scrapy.loader import ItemLoader
+from scrapy.loader.processors import TakeFirst
 
 from pachong.settings import SQL_DATE_FORMAT,SQL_DATETIME_FORMAT
 from pachong.utils.common import extract_num
@@ -120,3 +122,29 @@ class ZhihuAnswerItem(scrapy.Item):
                   watch_user_num, click_num, crawl_time)
 
         return insert_sql, params
+
+class LagouJobItemLoader(ItemLoader):
+    #自定义itemloader
+    default_output_processor = TakeFirst()
+
+
+class LagouJobItem(scrapy.Item):
+    #拉钩网职位信息
+    url = scrapy.Field()
+    url_object_id= scrapy.Field()
+    title= scrapy.Field()
+    salary = scrapy.Field()
+    job_city = scrapy.Field()
+    work_years = scrapy.Field()
+    degree_needed  = scrapy.Field()
+    job_type = scrapy.Field()
+    publish_time = scrapy.Field()
+    job_advantage = scrapy.Field()
+    job_desc = scrapy.Field()
+    job_addr = scrapy.Field()
+    company_name = scrapy.Field()
+    company_url = scrapy.Field()
+    tags = scrapy.Field()
+    crawl_time = scrapy.Field()
+
+    pass
