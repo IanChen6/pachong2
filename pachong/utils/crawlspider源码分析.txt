@@ -1,0 +1,120 @@
+﻿
+"""
+This modules implements the CrawlSpider which is the recommended spider to use
+for scraping typical web sites that requires crawling pages.
+
+See documentation in docs/topics/spiders.rst
+"""
+
+import copy
+import six
+
+from scrapy.http import Request, HtmlResponse
+from scrapy.utils.spider import iterate_spider_output
+from scrapy.spiders import Spider
+
+
+def identity(x):  #process_request默认方法,什么也没做
+    return x
+
+
+class Rule(object):
+
+    def __init__(self, link_extractor, callback=None, cb_kwargs=None, follow=None, process_links=None, process_request=identity):
+        self.link_extractor = link_extractor
+        self.callback = callback
+        self.cb_kwargs = cb_kwargs or {}
+        self.process_links = process_links  #处理url的方法
+        self.process_request = process_request  #处理请求的方法,默认是什么也没做
+        if follow is None: #如果follow没有指定的情况下,使用call贩判断
+            self.follow = False if callback else True  #有callback的时候默认为False,没有默认为True
+        else:
+            self.follow = follow  #否则根据follow的值来判断
+
+
+class CrawlSpider(Spider):
+
+    rules = ()
+
+    def __init__(self, *a, **kw):
+        super(CrawlSpider, self).__init__(*a, **kw)
+        self._compile_rules()
+
+    def parse(self, response):  #这里最开始处理start_url你的响应,之后会处理其他的响应
+        return self._parse_response(response, self.parse_start_url, cb_kwargs={}, follow=True)
+
+    def parse_start_url(self, response):  #默认该方法什么都没干
+        return []
+
+    def process_results(self, response, results): #默认该方法什么都没干
+        return results
+
+    def _build_request(self, rule, link):  #构造一个请求
+        #普通的请求,和我们scrapy.Request一样的
+        r = Request(url=link.url, callback=self._response_downloaded)  #构造一个请求,默认respsne交给_response_downloaded处理
+        #添加一些其他信息进去
+        r.meta.update(rule=rule, link_text=link.text)
+        return r
+
+    def _requests_to_follow(self, response):
+        if not isinstance(response, HtmlResponse):
+            return
+        seen = set()
+        for n, rule in enumerate(self._rules):   #继续开始提取url了
+            links = [lnk for lnk in rule.link_extractor.extract_links(response)
+                     if lnk not in seen]
+            if links and rule.process_links:  #如果我们在Rule你面设置process_links方法的话,会用该方法处理一下url地址再使用
+                links = rule.process_links(links)
+            #到这里reponse中经过链接提取器提取的url都拿到了
+            for link in links:
+                seen.add(link)  #简单的使用了一个set过滤
+                r = self._build_request(n, link)  #构造的一个请求
+                yield rule.process_request(r)  #发送了一个请求,默认情况下process_request什么也没干
+
+    def _response_downloaded(self, response):
+        rule = self._rules[response.meta['rule']]
+        return self._parse_response(response, rule.callback, rule.cb_kwargs, rule.follow)
+
+    def _parse_response(self, response, callback, cb_kwargs, follow=True):
+        if callback:
+            cb_res = callback(response, **cb_kwargs) or ()   #默认情况下什么也没干,因为默认start_urls是没callback的,见上面的parse_start_url
+            print(cb_res,"*"*100)
+
+            cb_res = self.process_results(response, cb_res)   #默认情况下什也没做
+            print(cb_res,"-"*100)
+            for requests_or_item in iterate_spider_output(cb_res):  #转化为可迭代对象,但是默认ca_res是空的
+                yield requests_or_item
+
+        if follow and self._follow_links:   #
+            #start_url的默认follow为True,所以该条件成立
+            print("self._follow_links",self._follow_links)
+            for request_or_item in self._requests_to_follow(response):
+                print(request_or_item,"="*100)
+                yield request_or_item  #发送了一个请求,
+
+    def _compile_rules(self):
+        def get_method(method):
+            if callable(method):
+                return method
+            elif isinstance(method, six.string_types):
+                return getattr(self, method, None)
+
+        self._rules = [copy.copy(r) for r in self.rules]
+        for rule in self._rules:
+            rule.callback = get_method(rule.callback)
+            rule.process_links = get_method(rule.process_links)
+            rule.process_request = get_method(rule.process_request)
+
+    @classmethod
+    def from_crawler(cls, crawler, *args, **kwargs):
+        spider = super(CrawlSpider, cls).from_crawler(crawler, *args, **kwargs)
+        spider._follow_links = crawler.settings.getbool(
+            'CRAWLSPIDER_FOLLOW_LINKS', True)
+        return spider
+
+    def set_crawler(self, crawler):
+        super(CrawlSpider, self).set_crawler(crawler)
+        #这个地方有个全局的默认设置,可以在setting中配置,默认为True
+        self._follow_links = crawler.settings.getbool('CRAWLSPIDER_FOLLOW_LINKS', True)
+
+
