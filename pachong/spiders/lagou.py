@@ -19,8 +19,8 @@ class LagouSpider(CrawlSpider):
     )#不能通过self. 传递parse_job函数,allow实质上是正则表达式，匹配允许的url
 
     #
-    def parse_start_url(self, response):  # 默认该方法什么都没干
-        return ['https://www.lagou.com/']
+    # def parse_start_url(self, response):  # 默认该方法什么都没干
+    #     return ['https://www.lagou.com/']
 
     # def process_results(self, response, results):  # 默认该方法什么都没干
     #     return results

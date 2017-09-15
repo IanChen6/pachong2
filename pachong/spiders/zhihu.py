@@ -2,7 +2,7 @@
 import datetime
 import re
 
-
+from pachong.settings import user_agent_list
 import scrapy
 import json
 
@@ -26,11 +26,13 @@ class ZhihuSpider(scrapy.Spider):
     #question的第一页answer的请求url
     start_answer_url="https://www.zhihu.com/api/v4/questions/{0}/answers?sort_by=default&include=data%5B%2A%5D.is_normal%2Cadmin_closed_comment%2Creward_info%2Cis_collapsed%2Cannotation_action%2Cannotation_detail%2Ccollapse_reason%2Cis_sticky%2Ccollapsed_by%2Csuggest_edit%2Ccomment_count%2Ccan_comment%2Ccontent%2Ceditable_content%2Cvoteup_count%2Creshipment_settings%2Ccomment_permission%2Ccreated_time%2Cupdated_time%2Creview_info%2Cquestion%2Cexcerpt%2Crelationship.is_authorized%2Cis_author%2Cvoting%2Cis_thanked%2Cis_nothelp%2Cupvoted_followees%3Bdata%5B%2A%5D.mark_infos%5B%2A%5D.url%3Bdata%5B%2A%5D.author.follower_count%2Cbadge%5B%3F%28type%3Dbest_answerer%29%5D.topics&limit={1}&offset={2}"
 
+
+
     agent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.98 Safari/537.36"
     headers = {
         "HOST": "www.zhihu.com",
         "Referer": "https://www.zhizhu.com",
-        'User-Agent': agent
+        'User-Agent':agent
     }
 
     def parse(self, response):
@@ -50,6 +52,12 @@ class ZhihuSpider(scrapy.Spider):
                 request_url=match_obj[0][0]
                 question_id=match_obj[0][1]
                 print(request_url,question_id)
+
+                # 生成随机agent
+                import random
+                random_index = random.randint(0, len(user_agent_list) - 1)
+                random_agent = user_agent_list[random_index]
+                self.headers["User-Agent"] = random_agent
 
                 yield scrapy.Request(request_url,headers=self.headers,callback=self.parse_question)
                 break#打断点使其只发送一个request，调试起来方便

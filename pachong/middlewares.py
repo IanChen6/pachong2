@@ -54,3 +54,7 @@ class PachongSpiderMiddleware(object):
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+#使用随机USERAGENT的middleware
+class RandomUserAgentMiddleware(object):
+    pass
