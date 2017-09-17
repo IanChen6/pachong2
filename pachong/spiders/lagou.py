@@ -47,8 +47,8 @@ class LagouSpider(CrawlSpider):
         
         item_loader.add_value("crawl_time",datetime.now())
 
-
-        return item_loader.load_item()
+        job_item = item_loader.load_item()
+        return job_item
 
 
 
