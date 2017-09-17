@@ -8,7 +8,7 @@ from datetime import datetime
 
 import scrapy
 from scrapy.loader import ItemLoader
-from scrapy.loader.processors import TakeFirst, MapCompose
+from scrapy.loader.processors import TakeFirst, MapCompose, Join
 
 from pachong.settings import SQL_DATE_FORMAT,SQL_DATETIME_FORMAT
 from pachong.utils.common import extract_num

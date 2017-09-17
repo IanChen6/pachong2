@@ -27,7 +27,7 @@ ROBOTSTXT_OBEY = False
 # Configure a delay for requests for the same website (default: 0)
 # See http://scrapy.readthedocs.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-# DOWNLOAD_DELAY = 3#爬虫速度？
+DOWNLOAD_DELAY = 3#爬虫速度？
 # The download delay setting will honor only one of:
 #CONCURRENT_REQUESTS_PER_DOMAIN = 16
 #CONCURRENT_REQUESTS_PER_IP = 16
@@ -53,7 +53,8 @@ COOKIES_ENABLED = True
 # Enable or disable downloader middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-   'pachong.middlewares.MyCustomDownloaderMiddleware': 543,
+   'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
+    'pachong.middlewares.RandomUserAgentMiddleware':1
 }
 
 USER_AGENT =  "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.98 Safari/537.36"
@@ -72,11 +73,9 @@ ITEM_PIPELINES = {
 }
 
 
-user_agent_list = [
-    "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.98 Safari/537.36"
-    "Mozilla/5.0 (Windows NT 6.1; W…) Gecko/20100101 Firefox/57.0"
+user_agent_list = []
 
-]
+RANDOM_UA_TYPE= "random"#为ua限定浏览器
 
 
 import os

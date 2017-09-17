@@ -6,7 +6,7 @@
 # http://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
 from scrapy import signals
-
+from fake_useragent import UserAgent#开源第三方随机useragent，无需在settings中维护useragentlist
 
 class PachongSpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
@@ -57,4 +57,24 @@ class PachongSpiderMiddleware(object):
 
 #使用随机USERAGENT的middleware
 class RandomUserAgentMiddleware(object):
-    pass
+
+    def __init__(self,crawler):
+        super(RandomUserAgentMiddleware,self).__init__()
+        # self.user_agent_list=crawler.settings.get("user_agent_list",[])
+        #通过fake-useragent导入随机agent
+        self.ua=UserAgent()
+        self.ua_type=crawler.settings.get("RANDOM_UA_TYPE","random")
+
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        return cls(crawler)#将crawler传递给RandomU...
+
+    def process_request(self,request,spider):
+        # request.headers.setdefault("User-Agent",random())#对user_agent产生随机变量
+
+        def get_ua():
+            return getattr(self.ua,self.ua_type)#getattr() 解释为：取ua的属性ua_type
+        random_agent=get_ua()
+        request.headers.setdefault("User-Agent", get_ua())
+        # request.meta["proxy"] = "http://221.202.248.223:8118"   #设置IP代理（西刺免费代理）
