@@ -10,8 +10,9 @@ cursor=conn.cursor()
 def crawl_ips():
     #爬取西刺的免费ip代理
     headers ={"User-Agent":"Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36 QIHU 360SE"}
-    for i in range(1568):
-            re =requests.get("http://www.xicidaili.com/nn/{0}".format(i),headers=headers)#遍历每个页面
+    # for i in range(1568):
+            # re =requests.get("http://www.xicidaili.com/nn/{0}".format(i),headers=headers)#遍历每个页面
+    re = requests.get("http://www.xicidaili.com/nn", headers=headers)
 
     selector= Selector(text=re.text)
     all_trs = selector.css("#ip_list tr")
