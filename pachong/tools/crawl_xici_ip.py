@@ -4,7 +4,8 @@ import requests
 from scrapy.selector import Selector
 import pymysql
 
-cursor=pymysql.connect("","","","")
+conn=pymysql.connect(host="127.0.0.1",port=3306,user="root",passwd="1029384756",db="zhihu",use_unicode=True,charset="utf8")
+cursor=conn.cursor()
 
 def crawl_ips():
     #爬取西刺的免费ip代理
@@ -30,16 +31,65 @@ def crawl_ips():
     for in_info in ip_list:
         cursor.excute(
             """
-            insert into proxy_ip(url,url_object_id, title,salary,job_city,work_years,degree_needed,
-              job_type, publish_time,job_advantage,job_desc,job_addr,company_name,company_url,tags,crawl_time
-              )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s, %s)
-            ON DUPLICATE KEY UPDATE salary=VALUES(salary),job_advantage=VALUES(job_advantage)
+            insert into proxy_ip(ip,port,proxy_type,speed) VALUES ('{0}', '{1}', '{2}','{3}')
+            ip_info[0],ip_info[1],ip_info[2],ip_info[3]
+            ON DUPLICATE KEY UPDATE speed=VALUES(speed)
         """
         )
+        conn.commit()
 
 class GetIP(object):
-    def get_random_ip(self):
-        pass
+    def delete_ip(self,ip):
+        #从数据库中删除无效IP
+        delete_sql ="""delete from proxy_ip where ip=‘{0}’
+        """.format(ip)
+        cursor.execute(delete_sql)
+        conn.commit()
+        return True
 
-print(crawl_ips())
+    def judge_ip(self,ip,port):
+        #判断ip是否可用
+        http_url = "http://www.baidu.com"
+        proxy_url = "http://{0}:{1}".format(ip,port)
+        try:
+            proxy_dict = {
+                "http":proxy_url
+            }
+            response=requests.get(http_url,proxies=proxy_dict)
+            return True
+        except Exception as e:
+            print("invalid ip and port")
+            self.delete_ip(ip)
+            return False
+        else:
+            code = response.status_code
+            if code >= 200 and code <300:
+                print('effected ip')
+                return True
+            else:
+                print("invalid ip and port")
+                self.delete_ip(ip)
+                return False
+
+    def get_random_ip(self):
+        #从数据库中随机获取ip,随机取出1个数据
+        random_sql="""
+        SELECT ip,port FROM proxy_ip
+        ORDER BY RAND()
+        LIMIT 1
+        """
+        result = cursor.execute(random_sql)
+        for ip_info in cursor.fetchall():#获取返回值，返回值是个tuple
+            ip = ip_info[0]
+            port = ip_info[1]
+
+            judge_re = self.judge_ip(ip,port)
+            if judge_re:
+                return "http://{0}:{1}".format(ip,port)
+            else:
+                return self.get_random_ip()
+
+
+if __name__ == "__main__":
+    print(crawl_ips())
+    GetIP.get_random_ip()

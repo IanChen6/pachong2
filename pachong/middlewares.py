@@ -7,6 +7,7 @@
 
 from scrapy import signals
 from fake_useragent import UserAgent#开源第三方随机useragent，无需在settings中维护useragentlist
+from pachong.tools.crawl_xici_ip import GetIP
 
 class PachongSpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
@@ -78,3 +79,9 @@ class RandomUserAgentMiddleware(object):
         random_agent=get_ua()
         request.headers.setdefault("User-Agent", get_ua())
         # request.meta["proxy"] = "http://221.202.248.223:8118"   #设置IP代理（西刺免费代理）
+
+class RandomProxyMiddleware(object):
+    #动态设置ip代理
+    def process_request(self,request,spider):
+        get_ip = GetIP()
+        request.meta["proxy"] = get_ip.get_random_ip()
