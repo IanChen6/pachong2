@@ -85,3 +85,22 @@ class RandomProxyMiddleware(object):
     def process_request(self,request,spider):
         get_ip = GetIP()
         request.meta["proxy"] = get_ip.get_random_ip()
+
+from selenium import webdriver
+from scrapy.http import HtmlResponse
+class JSPageMiddleware(object):
+    #通过Chrome请求动态网页
+
+    def __init__(self):#防止每次访问一个url都重新启动chrome
+        self.browser=webdriver.Chrome(executable_path='F:/web_driver_for_chrome/chromedriver.exe')
+        super(JSPageMiddleware,self).__init__()
+
+    def process_request(self, request, spider):
+        if spider.name =="zhihu":
+            # browser = webdriver.Chrome(executable_path='F:/web_driver_for_chrome/chromedriver.exe')
+            self.browser.get(request.url)
+            import time
+            time.sleep(5)
+            print("访问:{0}".format(request.url))
+
+            return HtmlResponse(url=self.browser.current_url,body=self.browser.page_source,encoding="utf8",request=request)#直接返回HtmlResponse,就不会再发送到downloader

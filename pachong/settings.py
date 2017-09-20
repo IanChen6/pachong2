@@ -54,7 +54,9 @@ COOKIES_ENABLED = False#禁用cookies可降低被反爬几率
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
    'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
-    'pachong.middlewares.RandomUserAgentMiddleware':1
+    # 'pachong.middlewares.RandomUserAgentMiddleware':1,
+    'pachong.middlewares.JSPageMiddleware':1
+
 }
 
 USER_AGENT =  "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.98 Safari/537.36"
