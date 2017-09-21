@@ -29,6 +29,12 @@ class ZhihuSpider(scrapy.Spider):
     #question的第一页answer的请求url
     start_answer_url="https://www.zhihu.com/api/v4/questions/{0}/answers?sort_by=default&include=data%5B%2A%5D.is_normal%2Cadmin_closed_comment%2Creward_info%2Cis_collapsed%2Cannotation_action%2Cannotation_detail%2Ccollapse_reason%2Cis_sticky%2Ccollapsed_by%2Csuggest_edit%2Ccomment_count%2Ccan_comment%2Ccontent%2Ceditable_content%2Cvoteup_count%2Creshipment_settings%2Ccomment_permission%2Ccreated_time%2Cupdated_time%2Creview_info%2Cquestion%2Cexcerpt%2Crelationship.is_authorized%2Cis_author%2Cvoting%2Cis_thanked%2Cis_nothelp%2Cupvoted_followees%3Bdata%5B%2A%5D.mark_infos%5B%2A%5D.url%3Bdata%5B%2A%5D.author.follower_count%2Cbadge%5B%3F%28type%3Dbest_answerer%29%5D.topics&limit={1}&offset={2}"
 
+    # 收集404出错页面
+    # handle_httpstatus_list = [404]#设置参数handle_httostatus_list可使404页面不被过滤
+
+    # def __init__(self):
+    #     self.fail_urls=[]
+
     custom_settings = {
         "COOKIES-ENABLED":True
     }#单独改变settings中的参数配置
@@ -41,16 +47,20 @@ class ZhihuSpider(scrapy.Spider):
         'User-Agent':agent
     }
 
-    def __init__(self):#在spider中初始化，这样的话，每个spider都有自己的浏览器
-        self.browser=webdriver.Chrome(executable_path='F:/web_driver_for_chrome/chromedriver.exe')
-        super(ZhihuSpider,self).__init__()
-        dispatcher.connect(self.spider_closed,signals.spider_closed)#传递信号。当爬虫关闭处理函数spider_closed
+    # def __init__(self):#在spider中初始化，这样的话，每个spider都有自己的浏览器
+    #     self.browser=webdriver.Chrome(executable_path='F:/web_driver_for_chrome/chromedriver.exe')
+    #     super(ZhihuSpider,self).__init__()
+    #     dispatcher.connect(self.spider_closed,signals.spider_closed)#传递信号。当爬虫关闭处理函数spider_closed
 
-    def spider_closed(self,spider):
-        print("spider closed")
-        self.browser.quit()
+    # def spider_closed(self,spider):
+    #     print("spider closed")
+    #     self.browser.quit()
 
     def parse(self, response):
+
+        # if response.status==404:
+        #     self.fail_urls.append(response.url)#收集404页面的url
+        #     self.crawler.status.inc_val('failed_url')#设置404页面的数量为failed_url,inc_val自动加1
         print(response.body)
         #提取HTML页面的所有URL，病跟踪这些URL进一步爬去
     #如果提取到的URL为/question/xxx 就下载之后进入解析函数

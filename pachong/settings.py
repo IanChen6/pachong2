@@ -46,9 +46,9 @@ COOKIES_ENABLED = False#禁用cookies可降低被反爬几率
 
 # Enable or disable spider middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
-#SPIDER_MIDDLEWARES = {
+# SPIDER_MIDDLEWARES = {
 #    'pachong.middlewares.PachongSpiderMiddleware': 543,
-#}
+# }
 
 # Enable or disable downloader middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
