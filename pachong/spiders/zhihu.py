@@ -8,7 +8,10 @@ import json
 
 from scrapy.loader import ItemLoader
 from pachong.items import ZhihuQuestionItem, ZhihuAnswerItem
-
+from scrapy.xlib.pydispatch import dispatcher
+from scrapy import signals
+from selenium import webdriver
+from scrapy.http import HtmlResponse
 try:
     import urlparse as parse
 except:
@@ -38,6 +41,14 @@ class ZhihuSpider(scrapy.Spider):
         'User-Agent':agent
     }
 
+    def __init__(self):#在spider中初始化，这样的话，每个spider都有自己的浏览器
+        self.browser=webdriver.Chrome(executable_path='F:/web_driver_for_chrome/chromedriver.exe')
+        super(ZhihuSpider,self).__init__()
+        dispatcher.connect(self.spider_closed,signals.spider_closed)#传递信号。当爬虫关闭处理函数spider_closed
+
+    def spider_closed(self,spider):
+        print("spider closed")
+        self.browser.quit()
 
     def parse(self, response):
         print(response.body)
