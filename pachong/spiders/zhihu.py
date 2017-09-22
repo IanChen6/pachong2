@@ -51,6 +51,7 @@ class ZhihuSpider(scrapy.Spider):
     #     self.browser=webdriver.Chrome(executable_path='F:/web_driver_for_chrome/chromedriver.exe')
     #     super(ZhihuSpider,self).__init__()
     #     dispatcher.connect(self.spider_closed,signals.spider_closed)#传递信号。当爬虫关闭处理函数spider_closed
+    #signals
 
     # def spider_closed(self,spider):
     #     print("spider closed")

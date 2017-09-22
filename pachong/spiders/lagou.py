@@ -11,7 +11,8 @@ class LagouSpider(CrawlSpider):
     allowed_domains = ['www.lagou.com']
     start_urls = ['https://www.lagou.com/']
 
-    JOBDIR="job_info/001"
+
+    # JOBDIR="job_info/001"
 
     rules = (
         # https://www.lagou.com/gongsi/j9891.html  follow表示深度解析，即当前页面的所有子页面
