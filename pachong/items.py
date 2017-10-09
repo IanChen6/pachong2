@@ -13,6 +13,7 @@ from scrapy.loader.processors import TakeFirst, MapCompose, Join
 from pachong.settings import SQL_DATE_FORMAT,SQL_DATETIME_FORMAT
 from pachong.utils.common import extract_num
 
+from pachong.models.es_types import LagouType
 from w3lib.html import remove_tags
 
 class PachongItem(scrapy.Item):
@@ -180,3 +181,26 @@ class LagouJobItem(scrapy.Item):
         params = (self["url"],self["url_object_id"], self["title"],self["salary"],self["job_city"],self["work_years"],self["degree_needed"],
                   self["job_type"], self["publish_time"],self["job_advantage"],self["job_desc"],self["job_addr"],self["company_name"],self["company_url"],self["tags"],self["crawl_time"].strftime(SQL_DATETIME_FORMAT))
         return insert_sql,params
+
+    def save_to_es(self):
+        joblagou = LagouType()
+        joblagou.title = self['title']
+        joblagou.url = self['url']
+        joblagou.url_object_id = self['url_object_id']
+        joblagou.salary = self['salary']
+        joblagou.job_city = self['job_city']
+        joblagou.work_years = self['work_years']
+        joblagou.degree_needed = self['degree_needed']
+        joblagou.job_type = self['job_type']
+        joblagou.publish_time = self['publish_time']
+        joblagou.tags = self['tags']
+        joblagou.job_advantage = self['job_advantage']
+        joblagou.job_desc = self['job_desc']
+        joblagou.job_addr = self['job_addr']
+        joblagou.company_url = self['company_url']
+        joblagou.company_name = self['company_name']
+        joblagou.crawl_time = self['crawl_time']
+
+        joblagou.save()
+
+        return

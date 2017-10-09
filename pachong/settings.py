@@ -71,7 +71,8 @@ USER_AGENT =  "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, li
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
    # 'pachong.pipelines.PachongPipeline': 300,
-    'pachong.pipelines.MysqlTwistedPipline':1,
+   #  'pachong.pipelines.MysqlTwistedPipline':1,
+    'pachong.pipelines.ElasticsearchPipline':1,
 }
 
 

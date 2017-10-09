@@ -7,7 +7,8 @@
 import pymysql
 from twisted.enterprise import adbapi
 from scrapy import log
-
+from pachong.models.es_types import LagouType
+from w3lib.html import remove_tags
 
 class PachongPipeline(object):
     def process_item(self, item, spider):
@@ -56,3 +57,12 @@ class MysqlTwistedPipline(object):
 
         cursor.execute(insert_sql, params)
 
+class ElasticsearchPipline(object):
+    #将数据写入ES中
+    def process_item(self, item, spider):
+        #将item转换成es的数据
+        item.save_to_es()
+
+
+
+        return item
