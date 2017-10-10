@@ -15,6 +15,8 @@ from pachong.utils.common import extract_num
 
 from pachong.models.es_types import LagouType
 from w3lib.html import remove_tags
+from elasticsearch_dsl.connections import connections
+es=connections.create_connection(LagouType._doc_type.using)#
 
 class PachongItem(scrapy.Item):
     # define the fields for your item here like:
@@ -138,6 +140,26 @@ class LagouJobItemLoader(ItemLoader):
     #自定义itemloader
     default_output_processor = TakeFirst()
 
+#传递搜索建议
+def gen_suggest(index,info_tuple):
+    #根据字符串生成搜索建议数组
+    #去重，避免覆盖权重
+    used_words = set()
+    suggests=[]
+    for text,weight in info_tuple:
+        if text:
+            #调用es的analyze接口分析字符串
+            words=es.indices.analyze(index=index,analyzer="ik_max_word",params={'filter':["lowercase"]},body=text)#将处理后的词语返回给words
+            analyzed_words=set([r['token'] for r in words['tokens'] if len(r['token'])>1 ])
+            new_words=analyzed_words-used_words
+            used_words.update(analyzed_words)
+        else:
+            new_words=set()
+
+        if new_words:
+            suggests.append({ "input":list(new_words),"weight" : weight})
+    return suggests
+
 
 class LagouJobItem(scrapy.Item):
     #拉钩网职位信息
@@ -201,6 +223,7 @@ class LagouJobItem(scrapy.Item):
         joblagou.company_name = self['company_name']
         joblagou.crawl_time = self['crawl_time']
 
+        joblagou.suggest =gen_suggest(LagouType._doc_type.index,((joblagou.title,10),(joblagou.tags,7)))
         joblagou.save()
 
         return

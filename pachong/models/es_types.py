@@ -4,11 +4,21 @@ from datetime import datetime
 from elasticsearch_dsl import DocType, Date, Nested, Boolean, \
     analyzer, InnerObjectWrapper, Completion, Keyword, Text
 
+from elasticsearch_dsl.analysis import CustomAnalyzer as _CustomAnalyzer
+
 from elasticsearch_dsl.connections import connections
 connections.create_connection(hosts=["localhost"])#连接服务器
 
+#避免analyzer报错
+class CustonAnalyzer(_CustomAnalyzer):
+    def get_analysis_definition(self):
+        return {}
+
+ik_analyzer=CustonAnalyzer("ik_max_word",filter=["lowercase"])
+
 class LagouType(DocType):
     #拉钩职位类型
+    suggest=Completion(analyzer=ik_analyzer)#添加suggester
     url = Keyword()
     url_object_id = Keyword()
     title = Text(analyzer="ik_max_word")
