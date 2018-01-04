@@ -10,8 +10,8 @@ from scrapy.selector import Selector  # 对页面提取用selector会比browser�
 # browser.get("https://weibo.com/")#调用浏览器模拟登陆知乎
 # import time
 # time.sleep(10)
-# browser.find_element_by_css_selector("#loginname").send_keys('626614767@qq.com')
-# browser.find_element_by_css_selector(".W_login_form input[type='password']").send_keys('welcome1993219')#send_keys：实现往框中输入内容
+# browser.find_element_by_css_selector("#loginname").send_keys(‘username’)
+# browser.find_element_by_css_selector(".W_login_form input[type='password']").send_keys(‘password’)#send_keys：实现往框中输入内容
 #
 # browser.find_element_by_css_selector(".W_login_form a[node-type='submitBtn']").click()
 
